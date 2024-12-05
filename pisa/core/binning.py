@@ -1550,32 +1550,49 @@ class MultiDimBinning(object):
 
     """
     # pylint: enable=line-too-long
-    def __init__(self, dimensions, name=None, mask=None):
+    def __init__(self, dimensions, name=None, mask=None, selection_dim_binning=None):
         self.__map_class = None
 
-        if isinstance(dimensions, OneDimBinning):
-            dimensions = [dimensions]
-        if not isinstance(dimensions, Sequence):
-            if isinstance(dimensions, Mapping):
-                if len(dimensions) == 1 and hasattr(dimensions, 'dimensions'):
-                    dimensions = dimensions['dimensions']
+        if selection_dim_binning is None:
+
+            if isinstance(dimensions, OneDimBinning):
                 dimensions = [dimensions]
-            elif isinstance(dimensions, Iterable):
-                pass
-            else:
-                raise TypeError('`dimensions` unhandled type: %s'
-                                % type(dimensions))
-        tmp_dimensions = []
-        for obj_num, obj in enumerate(dimensions):
-            if isinstance(obj, OneDimBinning):
-                one_dim_binning = obj
-            elif isinstance(obj, Mapping):
-                one_dim_binning = OneDimBinning(**obj)
-            else:
-                raise TypeError('Argument/object #%d unhandled type: %s'
-                                %(obj_num, type(obj)))
-            tmp_dimensions.append(one_dim_binning)
-        self._dimensions = tuple(tmp_dimensions)
+            if not isinstance(dimensions, Sequence):
+                if isinstance(dimensions, Mapping):
+                    if len(dimensions) == 1 and hasattr(dimensions, 'dimensions'):
+                        dimensions = dimensions['dimensions']
+                    dimensions = [dimensions]
+                elif isinstance(dimensions, Iterable):
+                    pass
+                else:
+                    raise TypeError('`dimensions` unhandled type: %s'
+                                    % type(dimensions))
+            tmp_dimensions = []
+            for obj_num, obj in enumerate(dimensions):
+                if isinstance(obj, OneDimBinning):
+                    one_dim_binning = obj
+                elif isinstance(obj, Mapping):
+                    one_dim_binning = OneDimBinning(**obj)
+                else:
+                    raise TypeError('Argument/object #%d unhandled type: %s'
+                                    %(obj_num, type(obj)))
+                tmp_dimensions.append(one_dim_binning)
+
+            self._dimensions = tuple(tmp_dimensions)
+            self._init_mask(mask)
+
+        elif isinstance(selection_dim_binning, OneDimBinning):
+
+            assert isinstance(dimensions, Sequence)
+            assert np.all([isinstance(d, MultiDimBinning) and d.sel_dim_bin is None for d in dimensions])
+            assert len(dimensions) == selection_dim_binning.size
+
+            self._dimensions = tuple(dimensions)
+            self._mask = None
+
+        else:
+            raise TypeError('`selection_dim_binning` must be of type OneDimBinning or None.')
+
         self._names = None
         self._basenames = None
         self._hash = None
@@ -1586,9 +1603,7 @@ class MultiDimBinning(object):
         self._mask_hash = None
         self._coord = None
         self._name = name
-
-        # Handle masking
-        self._init_mask(mask) 
+        self._sel_dim_bin = selection_dim_binning
 
 
     def _init_mask(self, mask) :
@@ -1645,6 +1660,10 @@ class MultiDimBinning(object):
         """Name of the dimension"""
         return self._name
 
+    @property
+    def sel_dim_bin(self):
+        """The dimension for which we use different binnings"""
+        return self._sel_dim_bin
 
     def __repr__(self):
         previous_precision = np.get_printoptions()['precision']
@@ -1973,10 +1992,11 @@ class MultiDimBinning(object):
         Return total number of bins.
         If a bin mask is used, this will only count bins that are not masked off
         """
-        if self.mask is None :
-            return np.product(self.shape)
-        else :
+        if self.sel_dim_bin is not None:
+            return np.sum([d.tot_num_bins for d in self.dimensions])
+        if self.mask is not None:
             return np.sum(self.mask.astype(int))
+        return np.product(self.shape)
 
     @property
     def units(self):
