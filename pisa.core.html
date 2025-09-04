@@ -5717,6 +5717,16 @@ So we go to the first stage we find that has one of the original parameters and 
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pisa.core.pipeline.Pipeline.assert_apply_modes_consistency">
+<span class="sig-name descname"><span class="pre">assert_apply_modes_consistency</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pisa/core/pipeline.html#Pipeline.assert_apply_modes_consistency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pisa.core.pipeline.Pipeline.assert_apply_modes_consistency" title="Link to this definition"></a></dt>
+<dd><p>Asserts that pipeline setup does not result in non-sensical
+transformations between Maps or from Maps to events
+(cf. Container.translate: rebinning without averaging is not
+implemented because of lacking benefits, and similarly going
+from a histogram to events).</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pisa.core.pipeline.Pipeline.assert_exclusive_varbinning">
 <span class="sig-name descname"><span class="pre">assert_exclusive_varbinning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_binning</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pisa/core/pipeline.html#Pipeline.assert_exclusive_varbinning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pisa.core.pipeline.Pipeline.assert_exclusive_varbinning" title="Link to this definition"></a></dt>
 <dd><p>Assert that <cite>VarBinning</cite> selections are mutually exclusive.
@@ -6124,13 +6134,11 @@ functionality is built-in.</p>
 <li><p><strong>params</strong> (<a class="reference internal" href="#pisa.core.param.ParamSelector" title="pisa.core.param.ParamSelector"><em>ParamSelector</em></a><em>, </em><em>dict</em><em> of </em><em>ParamSelector kwargs</em><em>, </em><a class="reference internal" href="#pisa.core.param.ParamSet" title="pisa.core.param.ParamSet"><em>ParamSet</em></a><em>, or </em><em>object instantiable to ParamSet</em>)</p></li>
 <li><p><strong>expected_params</strong> (<em>list</em><em> of </em><em>strings</em>) – List containing required <cite>params</cite> names.</p></li>
 <li><p><strong>expected_container_keys</strong> (<em>list</em><em> of </em><em>strings</em>) – List containing required container keys.</p></li>
-<li><p><strong>debug_mode</strong> (<em>None</em><em>, </em><em>bool</em><em>, or </em><em>string</em>) – <p>If None, False, or empty string, the stage runs normally.</p>
-<p>Otherwise, the stage runs in debug mode. This disables caching
-(TODO: where or how?).
-Services that subclass from the <cite>Stage</cite> class can then implement
-further custom behavior when this mode is set by reading the value of
-the <cite>self.debug_mode</cite> attribute.</p>
-</p></li>
+<li><p><strong>debug_mode</strong> (<em>None</em><em>, </em><em>bool</em><em>, or </em><em>string</em>) – If None, False, or empty string, the stage runs normally.
+Otherwise, the stage runs in debug mode: services that subclass
+from the <cite>Stage</cite> class can then implement further custom behavior
+when this mode is set by reading the value of the <cite>self.debug_mode</cite>
+attribute.</p></li>
 <li><p><strong>error_method</strong> (<em>None</em><em> or </em><em>string</em><em> (</em><em>not enforced</em><em>)</em>) – An option to define one or more dedicated error calculation methods
 for the stage transforms or outputs</p></li>
 <li><p><strong>supported_reps</strong> (<em>dict</em>) – Dictionary containing the representations allowed for calc_mode and
